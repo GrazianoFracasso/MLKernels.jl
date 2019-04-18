@@ -76,8 +76,10 @@ function kernelmatrix(
         X::AbstractMatrix{T},
         symmetrize::Bool = true
     ) where {T<:Real}
-    K = allocate_basematrix(σ, X, κ)
-    symmetric_kappamatrix!(κ, basematrix!(σ, K, basefunction(κ), X, false), symmetrize)
+    P = pairwise(basefunction(κ),X,dims=dim(σ))
+    return symmetric_kappamatrix!(κ,P,symmetrize)
+    # K = allocate_basematrix(σ, X, κ)
+    # symmetric_kappamatrix!(κ, basematrix!(σ, K, basefunction(κ), X, false), symmetrize)
 end
 
 function kernelmatrix(
@@ -86,8 +88,9 @@ function kernelmatrix(
         X::AbstractMatrix{T},
         Y::AbstractMatrix{T}
     ) where {T<:Real}
-    K = allocate_basematrix(σ, X, Y, κ)
-    kappamatrix!(κ, basematrix!(σ, K, basefunction(κ), X, Y))
+    # K = allocate_basematrix(σ, X, Y, κ)
+    # kappamatrix!(κ, basematrix!(σ, K, basefunction(κ), X, Y))
+    kappamatrix!(κ, pairwise(basefunction(κ), X, Y, dims=dim(σ)))
 end
 
 

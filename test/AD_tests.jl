@@ -47,7 +47,42 @@ approxK([l,l+0.5])
 
 @show ForwardDiff.gradient(approxK,[l,l+0.5])
 ## Works nicely with everything
-@show Tracker.data(Tracker.gradient(approxK,[l,l+0.5]))
+∇pairwise(metric::WeightedSqEuclidean,x::AbstractMatrix,y::AbstractMatrix,f,dims)=
+    function(Δ)
+        x̄ = 2 .* (x * Diagonal(vec(sum(Δ; dims=2))) .- y * transpose(Δ))
+        ȳ = 2 .* (y * Diagonal(vec(sum(Δ; dims=1))) .- x * Δ)
+        w̄ = pairwise(WeightedSqEuclidean(Δ),x,y,dims=dims)
+        return w̄, f(x̄),f(ȳ)
+    end
+
+∇pairwise(metric::WeightedSqEuclidean,x::AbstractMatrix,f,dims)=
+    function(Δ)
+        d1 = Diagonal(vec(sum(Δ; dims=1)))
+        d2 = Diagonal(vec(sum(Δ; dims=2)))
+        w̄ = pairwise(WeightedSqEuclidean(Δ),x,y,dims=dims)
+        return (w̄, x * (2 .* (d1 .+ d2 .- Δ .- transpose(Δ))) |> f)
+    end
+
+Tracker.@grad function pairwise(metric::WeightedSqEuclidean,a::AbstractMatrix,dims::Int=2)
+    if dims==1
+        return pairwise(metrics,a,dims=dims), ∇pairwise(metrics,transpose(a),transpose,dims)
+    else
+        return pairwise(metrics,a,dims=dims),∇pairwise(metrics,transpose(a),identity,dims)
+    end
+end
+
+Tracker.@grad function pairwise(metric::WeightedSqEuclidean,a::AbstractMatrix,b::AbstractMatrix,dims::Int=2)
+    if dims==1
+        return pairwise(metrics,a,dims=dims), ∇pairwise(metrics,transpose(a),transpose(b),transpose,dims)
+    else
+        return pairwise(metrics,a,dims=dims),∇pairwise(metrics,transpose(a),transpose(b),identity,dims)
+    end
+end
+
+
+
+# using Debugger
+@show Tracker.gradient(approxK,[l,l+0.5])
 # Only works for iso kernels,
 
 ##Performance
