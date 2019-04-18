@@ -95,17 +95,19 @@ for orientation in (:row, :col)
 
         @inline function allocate_basematrix(
                 ::Val{$(Meta.quot(orientation))},
-                X::AbstractMatrix{T}
+                X::AbstractMatrix{T},
+                κ::Kernel
             ) where {T<:Real}
-            Array{T}(undef, size(X,$dim_obs), size(X,$dim_obs))
+            Array{eltype(κ)}(undef, size(X,$dim_obs), size(X,$dim_obs))
         end
 
         @inline function allocate_basematrix(
                 ::Val{$(Meta.quot(orientation))},
                 X::AbstractMatrix{T},
-                Y::AbstractMatrix{T}
+                Y::AbstractMatrix{T},
+                κ::Kernel
             ) where {T<:Real}
-            Array{T}(undef, size(X,$dim_obs), size(Y,$dim_obs))
+            Array{eltype(κ)}(undef, size(X,$dim_obs), size(Y,$dim_obs))
         end
 
         function checkdimensions(
@@ -150,77 +152,23 @@ end
 function basematrix!(
         σ::Orientation,
         P::Matrix{T},
-        f::BaseFunction,
-        scale::AbstractArray{T},
+        f::Distances.PreMetric,
         X::AbstractMatrix{T},
         symmetrize::Bool
     ) where {T<:Real}
     n = checkdimensions(σ, P, X)
-    for j = 1:n
-        xj = subvector(σ, X, j)
-        for i = 1:j
-            xi = subvector(σ, X, i)
-            @inbounds P[i,j] = unsafe_base_evaluate(f, scale, xi, xj)
-        end
-    end
-    symmetrize ? LinearAlgebra.copytri!(P, 'U', false) : P
+    pairwise!(P,f,X,dims=dim(σ))
 end
 
 function basematrix!(
         σ::Orientation,
         P::Matrix{T},
-        f::BaseFunction,
-        scale::T,
-        X::AbstractMatrix{T},
-        symmetrize::Bool
-    ) where {T<:Real}
-    n = checkdimensions(σ, P, X)
-    for j = 1:n
-        xj = subvector(σ, X, j)
-        for i = 1:j
-            xi = subvector(σ, X, i)
-            @inbounds P[i,j] = unsafe_base_evaluate(f, scale, xi, xj)
-        end
-    end
-    symmetrize ? LinearAlgebra.copytri!(P, 'U', false) : P
-end
-
-function basematrix!(
-        σ::Orientation,
-        P::Matrix{T},
-        f::BaseFunction,
-        scale::AbstractArray{T},
+        f::Distances.PreMetric,
         X::AbstractMatrix{T},
         Y::AbstractMatrix{T},
     ) where {T<:Real}
     n, m = checkdimensions(σ, P, X, Y)
-    for j = 1:m
-        yj = subvector(σ, Y, j)
-        for i = 1:n
-            xi = subvector(σ, X, i)
-            @inbounds P[i,j] = unsafe_base_evaluate(f, scale, xi, yj)
-        end
-    end
-    P
-end
-
-function basematrix!(
-        σ::Orientation,
-        P::Matrix{T},
-        f::BaseFunction,
-        scale::T,
-        X::AbstractMatrix{T},
-        Y::AbstractMatrix{T},
-    ) where {T<:Real}
-    n, m = checkdimensions(σ, P, X, Y)
-    for j = 1:m
-        yj = subvector(σ, Y, j)
-        for i = 1:n
-            xi = subvector(σ, X, i)
-            @inbounds P[i,j] = unsafe_base_evaluate(f, scale, xi, yj)
-        end
-    end
-    P
+    pairwise!(P,f,X,Y,dims=dim(σ))
 end
 
 # ScalarProduct using BLAS/Built-In methods ================================================

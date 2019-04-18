@@ -53,6 +53,8 @@ export
 
 
 using SpecialFunctions: besselk, gamma
+using Distances
+
 import LinearAlgebra
 import Statistics
 
@@ -66,6 +68,11 @@ Union of the two `Val` types representing the data matrix orientations:
      matrix
 """
 const Orientation = Union{Val{:row}, Val{:col}}
+
+@inline dim(::Val{:row}) = 1
+@inline dim(::Val{:col}) = 2
+
+abstract type Kernel{T<:Real} end
 
 include("utils.jl")
 

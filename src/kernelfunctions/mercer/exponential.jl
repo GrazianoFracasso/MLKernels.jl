@@ -2,7 +2,7 @@
 
 abstract type AbstractExponentialKernel{T<:Real} <: MercerKernel{T} end
 
-@inline basefunction(::AbstractExponentialKernel) = SquaredEuclidean()
+@inline basefunction(k::AbstractExponentialKernel) = k.metric
 
 
 # Exponential Kernel =======================================================================
@@ -30,9 +30,14 @@ ExponentialKernel{Float32}(2.0)
 """
 struct ExponentialKernel{T<:Real,A} <: AbstractExponentialKernel{T}
     α::A
-    function ExponentialKernel{T}(α::Union{Real,AbstractVector{<:Real}}=T(1)) where {T<:Real}
+    metric::SemiMetric
+    function ExponentialKernel{T}(α::A=T(1)) where {T<:Real,A<:Union{Real,AbstractVector{<:Real}}}
         @check_args(ExponentialKernel, α, count(α .<= zero(T)) == 0, "α > 0")
-        return new{T,typeof(α)}(α.^2)
+        if A <:Real
+            return new{eltype(A),A}(α,Euclidean())
+        else
+            return new{eltype(A),A}(α,WeightedEuclidean(α.^2))
+        end
     end
 end
 
@@ -77,9 +82,14 @@ SquaredExponentialKernel{Float32}(2.0)
 """
 struct SquaredExponentialKernel{T<:Real,A} <: AbstractExponentialKernel{T}
     α::A
-    function SquaredExponentialKernel{T}(α::Union{Real,AbstractVector{<:Real}}=T(1)) where {T<:Real}
+    metric::SemiMetric
+    function SquaredExponentialKernel{T}(α::A=T(1)) where {T<:Real,A<:Union{Real,AbstractVector{<:Real}}}
         @check_args(SquaredExponentialKernel, α, all(α .> zero(T)), "α > 0")
-        return new{T,typeof(α)}(α)
+        if A <: Real
+            return new{eltype(A),A}(α,SqEuclidean())
+        else
+            return new{eltype(A),A}(α,WeightedSqEuclidean(α))
+        end
     end
 end
 

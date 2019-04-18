@@ -1,7 +1,5 @@
 # Kernel Functions =========================================================================
 
-abstract type Kernel{T<:Real} end
-
 function string(κ::Kernel{T}) where {T}
     args = [string(getfield(κ,θ)) for θ in fieldnames(typeof(κ))]
     kernelname = typeof(κ).name.name
