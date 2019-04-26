@@ -41,3 +41,6 @@ end
 function convert(::Type{K}, κ::MaternKernel) where {K>:MaternKernel{T,A} where A} where T
     return MaternKernel{T}(T(κ.ν), T.(1.0./sqrt.(κ.α)))
 end
+
+
+##TODO Write general form for 1/2, 3/2 and 5/2

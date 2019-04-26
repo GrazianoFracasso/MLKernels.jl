@@ -43,6 +43,7 @@ end
 
 ExponentialKernel(α::Union{T,AbstractVector{T}}=1.0) where {T<:Real} = ExponentialKernel{promote_float(T)}(α)
 
+@inline kappa(κ::ExponentialKernel{T,<:Real}, d²::T) where {T} = exp(-κ.α*√(d²))
 @inline kappa(κ::ExponentialKernel{T}, d²::T) where {T} = exp(-√(d²))
 
 function Base.convert(::Type{K}, κ::ExponentialKernel) where {K>:ExponentialKernel{T,A} where A} where T
@@ -98,6 +99,7 @@ function SquaredExponentialKernel(α::Union{T,AbstractVector{T}}=1.0) where {T<:
     SquaredExponentialKernel{promote_float(T)}(α)
 end
 
+@inline kappa(κ::SquaredExponentialKernel{T,<:Real}, d²::T) where {T} = exp(-κ.α*d²)
 @inline kappa(κ::SquaredExponentialKernel{T}, d²::T) where {T} = exp(-d²)
 
 function convert(
@@ -151,10 +153,15 @@ GammaExponentialKernel{Float64}(2.0,0.5)
 struct GammaExponentialKernel{T<:Real,A} <: AbstractExponentialKernel{T}
     α::A
     γ::T
+    metric::SemiMetric
     function GammaExponentialKernel{T}(α::Union{Real,AbstractVector{<:Real}}=T(1), γ::Real=T(1)) where {T<:Real}
         @check_args(GammaExponentialKernel, α, count(α .<= zero(T))==0, "α > 0")
         @check_args(GammaExponentialKernel, γ, one(T) >= γ > zero(T), "γ ∈ (0,1]")
-        return new{T,typeof(α)}(α.^(-γ), γ)
+        if A <: Real
+            return new{T,A}(α,γ,SqEuclidean())
+        else
+            return new{T,A}(α,γ,WeightedSqEuclidean(α.^(-γ)))
+        end
     end
 end
 
@@ -162,6 +169,7 @@ function GammaExponentialKernel(α::Union{T₁,AbstractVector{T₁}}=1.0, γ::T�
     return GammaExponentialKernel{promote_float(T₁,T₂)}(α, γ)
 end
 
+@inline kappa(κ::GammaExponentialKernel{T,<:Real}, d²::T) where {T} = exp(-κ.α*d²^κ.γ)
 @inline kappa(κ::GammaExponentialKernel{T}, d²::T) where {T} = exp(-d²^κ.γ)
 
 function convert(

@@ -75,6 +75,7 @@ const Orientation = Union{Val{:row}, Val{:col}}
 abstract type Kernel{T<:Real} end
 
 include("utils.jl")
+include("scalarproduct.jl")
 
 include("basefunctions.jl")
 include("basematrix.jl")

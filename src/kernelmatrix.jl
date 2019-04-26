@@ -76,8 +76,7 @@ function kernelmatrix(
         X::AbstractMatrix{T},
         symmetrize::Bool = true
     ) where {T<:Real}
-    P = pairwise(basefunction(κ),X,dims=dim(σ))
-    return symmetric_kappamatrix!(κ,P,symmetrize)
+    return symmetric_kappamatrix!(κ,pairwise(basefunction(κ),X,dims=dim(σ)),symmetrize)
     # K = allocate_basematrix(σ, X, κ)
     # symmetric_kappamatrix!(κ, basematrix!(σ, K, basefunction(κ), X, false), symmetrize)
 end
@@ -102,16 +101,16 @@ end
 Apply the kernel `κ` to ``x`` and ``y`` where ``x`` and ``y`` are vectors or scalars of
 some subtype of ``Real``.
 """
-function kernel(κ::Kernel{T}, x::Real, y::Real) where {T}
-    kernel(κ, T(x), T(y))
-end
+# function kernel(κ::Kernel{T}, x::Real, y::Real) where {T}
+#     kernel(κ, T(x), T(y))
+# end
 
 function kernel(
         κ::Kernel{T},
         x::AbstractArray{T1},
         y::AbstractArray{T2}
     ) where {T,T1,T2}
-    kernel(κ, convert(AbstractArray{T}, x), convert(AbstractArray{T}, y))
+    kappamatrix!(κ, pairwise(basefunction(κ),X,Y,dims=dim(σ)))
 end
 
 """
@@ -125,8 +124,7 @@ function kernelmatrix(
         X::AbstractMatrix{T1},
         symmetrize::Bool = true
     ) where {T,T1}
-    U = convert(AbstractMatrix{T}, X)
-    kernelmatrix(σ, κ, U, symmetrize)
+    return symmetric_kappamatrix!(κ,pairwise(basefunction(κ),X,dims=dim(σ)),symmetrize)
 end
 
 function kernelmatrix(
@@ -148,9 +146,7 @@ function kernelmatrix(
         X::AbstractMatrix{T1},
         Y::AbstractMatrix{T2}
     ) where {T,T1,T2}
-    U = convert(AbstractMatrix{T}, X)
-    V = convert(AbstractMatrix{T}, Y)
-    kernelmatrix(σ, κ, U, V)
+    kappamatrix!(κ, pairwise(basefunction(κ), X, Y, dims=dim(σ)))
 end
 
 function kernelmatrix(
