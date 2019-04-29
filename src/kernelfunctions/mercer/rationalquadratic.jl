@@ -33,13 +33,15 @@ RationalQuadraticKernel{Float64}(2.0,2.0)
 struct RationalQuadraticKernel{T<:Real,A} <: AbstractRationalQuadraticKernel{T}
     α::A
     β::T
+    metric::SemiMetric
     function RationalQuadraticKernel{T}(
-            α::Union{Real,AbstractVector{<:Real}}=T(1),
+            α::A=T(1),
             β::Real=T(1)
-        ) where {T<:Real}
+        ) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
         @check_args(RationalQuadraticKernel, α, count(α .<= zero(T))==0, "α > 0")
         @check_args(RationalQuadraticKernel, β, β > zero(T), "β > 0")
-        return new{T,typeof(α)}(α, β)
+        
+        return new{T,A}(α, β)
     end
 end
 function RationalQuadraticKernel(
@@ -95,10 +97,10 @@ struct GammaRationalQuadraticKernel{T<:Real,A} <: AbstractRationalQuadraticKerne
     β::T
     γ::T
     function GammaRationalQuadraticKernel{T}(
-            α::Union{Real,AbstractVector{<:Real}}=T(1),
+            α::A=T(1),
             β::Real=T(1),
             γ::Real=T(1)
-        ) where {T<:Real}
+        ) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
         @check_args(GammaRationalQuadraticKernel, α, α > zero(T), "α > 0")
         @check_args(GammaRationalQuadraticKernel, β, β > zero(T), "β > 0")
         @check_args(GammaRationalQuadraticKernel, γ, one(T) >= γ > zero(T), "γ ∈ (0,1]")

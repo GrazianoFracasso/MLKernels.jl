@@ -19,20 +19,28 @@ MaternKernel{Float64}(2.0,2.0)
 """
 struct MaternKernel{T<:Real,A} <: MercerKernel{T}
     ν::T
-    α::A
-    function MaternKernel{T}(ν::Real=T(1), ρ::Union{Real,AbstractVector{<:Real}}=T(1)) where {T<:Real}
+    ρ::A
+    metric::SemiMetric
+    function MaternKernel{T}(ν::Real=T(1), ρ::=T(1)) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
         @check_args(MaternKernel, ν, ν > zero(T), "ν > 0")
         @check_args(MaternKernel, ρ, count(ρ .<= zero(T)) == 0, "ρ > 0")
-        return new{T,typeof(ρ)}(ν, 1.0./ρ.^2)
+        if A <: Real
+            return new{T,A}(ν, ρ, Euclidean())
+        else
+            return new{T,A}(ν, ρ, WeightedEuclidean(1.0./ρ))
+        end
     end
 end
 
 MaternKernel(ν::Union{T₁,AbstractVector{T₁}}=1.0, ρ::T₂=T₁(1)) where {T₁<:Real,T₂<:Real} = MaternKernel{promote_float(T₁,T₂)}(ν,ρ)
 
-@inline basefunction(::MaternKernel) = SquaredEuclidean()
+@inline function kappa(κ::MaternKernel{T,<:Real}, d::T) where {T}
+    d = d < eps(T) ? eps(T) : d  # If d is zero, besselk will return NaN
+    tmp = √(2κ.ν)*d/κ.ρ
+    return (convert(T, 2)^(one(T) - κ.ν))*(tmp^κ.ν)*besselk(κ.ν, tmp)/gamma(κ.ν)
+end
 
-@inline function kappa(κ::MaternKernel{T}, d²::T) where {T}
-    d = √(d²)
+@inline function kappa(κ::MaternKernel{T}, d::T) where {T}
     d = d < eps(T) ? eps(T) : d  # If d is zero, besselk will return NaN
     tmp = √(2κ.ν)*d
     return (convert(T, 2)^(one(T) - κ.ν))*(tmp^κ.ν)*besselk(κ.ν, tmp)/gamma(κ.ν)

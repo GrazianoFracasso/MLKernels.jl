@@ -84,7 +84,7 @@ SquaredExponentialKernel{Float32}(2.0)
 struct SquaredExponentialKernel{T<:Real,A} <: AbstractExponentialKernel{T}
     α::A
     metric::SemiMetric
-    function SquaredExponentialKernel{T}(α::A=T(1)) where {T<:Real,A<:Union{Real,AbstractVector{<:Real}}}
+    function SquaredExponentialKernel{T}(α::A=T(1)) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
         @check_args(SquaredExponentialKernel, α, all(α .> zero(T)), "α > 0")
         if A <: Real
             return new{eltype(A),A}(α,SqEuclidean())
@@ -154,7 +154,7 @@ struct GammaExponentialKernel{T<:Real,A} <: AbstractExponentialKernel{T}
     α::A
     γ::T
     metric::SemiMetric
-    function GammaExponentialKernel{T}(α::Union{Real,AbstractVector{<:Real}}=T(1), γ::Real=T(1)) where {T<:Real}
+    function GammaExponentialKernel{T}(α::A=T(1), γ::Real=T(1)) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
         @check_args(GammaExponentialKernel, α, count(α .<= zero(T))==0, "α > 0")
         @check_args(GammaExponentialKernel, γ, one(T) >= γ > zero(T), "γ ∈ (0,1]")
         if A <: Real

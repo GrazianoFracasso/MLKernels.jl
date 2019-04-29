@@ -24,15 +24,21 @@ struct PolynomialKernel{T<:Real,A} <: MercerKernel{T}
     α::A
     c::T
     d::T
+    metrics::Metric
     function PolynomialKernel{T}(
-            a::Union{Real,AbstractVector{<:Real}}=T(1),
+            a::A=T(1),
             c::Real=T(1),
             d::Real=T(3)
-        ) where {T<:Real}
+        ) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
         @check_args(PolynomialKernel, a, count(a .<=  zero(T)) == 0, "a > 0")
         @check_args(PolynomialKernel, c, c >= zero(T), "c ≧ 0")
         @check_args(PolynomialKernel, d, d >= one(T) && d == trunc(d), "d ∈ ℤ₊")
-        return new{T,typeof(a)}(a, c, d)
+        if A<:Real
+            return new{T,A}(a, c, d, ScalarProduct())
+        else
+            return new{T,A}(a, c, d, WeightedScalarProduct(a))
+        end
+
     end
 end
 
@@ -46,9 +52,8 @@ end
 
 @inline basefunction(::PolynomialKernel) = ScalarProduct()
 
-@inline function kappa(κ::PolynomialKernel{T}, xᵀy::T) where {T}
-    return (xᵀy + κ.c)^(κ.d)
-end
+@inline function kappa(κ::PolynomialKernel{T,<:Real}, xᵀy::T) where {T} = (κ.a*xᵀy + κ.c)^(κ.d)
+@inline function kappa(κ::PolynomialKernel{T}, xᵀy::T) where {T} = (xᵀy + κ.c)^(κ.d)
 
 function convert(::Type{K}, κ::PolynomialKernel) where {K>:PolynomialKernel{T,A} where A} where T
     return PolynomialKernel{T}(T.(κ.α), T(κ.c), T(κ.d))
