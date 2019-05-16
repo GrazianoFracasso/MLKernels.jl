@@ -24,20 +24,27 @@ LogKernel{Float64}(0.5,0.5)
 struct LogKernel{T<:Real,A} <: NegativeDefiniteKernel{T}
     α::A
     γ::T
-    function LogKernel{T}(α::Union{Real,AbstractVector{<:Real}}=T(1), γ::Real=T(1)) where {T<:Real}
-        @check_args(LogKernel, α, count(α .<= zero(T))==0, "α > 0")
+    metric::Metric
+    function LogKernel{T}(α::A=T(1), γ::Real=T(1)) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
+        @check_args(LogKernel, α, all(α .> zero(T)), "α > 0")
         @check_args(LogKernel, γ, one(T) >= γ > zero(T), "γ ∈ (0,1]")
-        return new{T,typeof(α)}(α.^(-γ), γ)
+        o
+        if A <: Real
+            new{T,A}(α,γ,SqEuclidean())
+        else
+            new{T,A}(α,γ,WeightedSqEuclidean(α.^-γ))
+        end
     end
 end
 function LogKernel(α::Union{T₁,AbstractVector{T₁}}=1.0, γ::T₂=T₁(1)) where {T₁<:Real,T₂<:Real}
     LogKernel{promote_float(T₁,T₂)}(α, γ)
 end
 
-@inline basefunction(::LogKernel) = SquaredEuclidean()
+# @inline basefunction(::LogKernel) = SquaredEuclidean()
 
+@inline kappa(κ::LogKernel{T,<:Real}, d²::T) where {T} = log(one(T) + (κ.α*d²)^(κ.γ))
 @inline kappa(κ::LogKernel{T}, d²::T) where {T} = log(one(T) + d²^(κ.γ))
 
 function convert(::Type{K}, κ::LogKernel) where {K>:LogKernel{T,A} where A} where T
-    return LogKernel{T}(T.(κ.α.^(κ.γ)), T.(κ.γ))
+    return LogKernel{T}(T.(κ.α), T.(κ.γ))
 end

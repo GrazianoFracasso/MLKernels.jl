@@ -13,6 +13,8 @@ end
 @inline eltype(::Type{<:Kernel{E}}) where {E} = E
 @inline eltype(κ::Kernel) = eltype(typeof(κ))
 
+basefunction(κ::Kernel) = κ.metric
+
 """
     ismercer(κ::Kernel)
 

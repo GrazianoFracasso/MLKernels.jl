@@ -2,7 +2,7 @@
 
 abstract type AbstractExponentialKernel{T<:Real} <: MercerKernel{T} end
 
-@inline basefunction(k::AbstractExponentialKernel) = k.metric
+# @inline basefunction(k::AbstractExponentialKernel) = k.metric
 
 
 # Exponential Kernel =======================================================================
@@ -43,11 +43,11 @@ end
 
 ExponentialKernel(α::Union{T,AbstractVector{T}}=1.0) where {T<:Real} = ExponentialKernel{promote_float(T)}(α)
 
-@inline kappa(κ::ExponentialKernel{T,<:Real}, d²::T) where {T} = exp(-κ.α*√(d²))
-@inline kappa(κ::ExponentialKernel{T}, d²::T) where {T} = exp(-√(d²))
+@inline kappa(κ::ExponentialKernel{T,<:Real}, d²::T) where {T} = exp(-κ.α*d)
+@inline kappa(κ::ExponentialKernel{T}, d²::T) where {T} = exp(-d)
 
 function Base.convert(::Type{K}, κ::ExponentialKernel) where {K>:ExponentialKernel{T,A} where A} where T
-    return ExponentialKernel{T}(T.(sqrt.(κ.α)))
+    return ExponentialKernel{T}(T.(κ.α))
 end
 
 """
@@ -176,5 +176,5 @@ function convert(
         ::Type{K},
         κ::GammaExponentialKernel
     ) where {K>:GammaExponentialKernel{T,A} where A} where T
-    return GammaExponentialKernel{T}(T.(κ.α.^(κ.γ)), T.(κ.γ))
+    return GammaExponentialKernel{T}(T.(κ.α), T.(κ.γ))
 end
