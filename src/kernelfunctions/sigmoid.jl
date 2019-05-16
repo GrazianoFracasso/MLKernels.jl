@@ -30,7 +30,7 @@ struct SigmoidKernel{T<:Real,A} <: Kernel{T}
 end
 SigmoidKernel(a::Union{T₁,AbstractVector{T₁}}=1.0, c::T₂=T₁(1)) where {T₁<:Real,T₂<:Real} = SigmoidKernel{promote_float(T₁,T₂)}(a,c)
 
-@inline basefunction(::SigmoidKernel) = ScalarProduct()
+# @inline basefunction(::SigmoidKernel) = ScalarProduct()
 
 @inline kappa(κ::SigmoidKernel{T}, xᵀy::T) where {T} = tanh(xᵀy + κ.c)
 

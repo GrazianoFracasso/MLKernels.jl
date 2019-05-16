@@ -27,7 +27,7 @@ struct MaternKernel{T<:Real,A} <: MercerKernel{T}
         if A <: Real
             return new{T,A}(ν, ρ, Euclidean())
         else
-            return new{T,A}(ν, ρ, WeightedEuclidean(1.0./ρ))
+            return new{T,A}(ν, ρ, WeightedEuclidean(1.0./ρ.^2))
         end
     end
 end

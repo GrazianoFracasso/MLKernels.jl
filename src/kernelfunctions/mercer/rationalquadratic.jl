@@ -1,7 +1,7 @@
 # Abstract Rational-Quadratic Kernel =======================================================
 abstract type AbstractRationalQuadraticKernel{T<:Real} <: MercerKernel{T} end
 
-@inline basefunction(::AbstractRationalQuadraticKernel) = SquaredEuclidean()
+# @inline basefunction(::AbstractRationalQuadraticKernel) = SquaredEuclidean()
 
 
 # Rational-Quadratic Kernel ================================================================
@@ -38,10 +38,13 @@ struct RationalQuadraticKernel{T<:Real,A} <: AbstractRationalQuadraticKernel{T}
             α::A=T(1),
             β::Real=T(1)
         ) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
-        @check_args(RationalQuadraticKernel, α, count(α .<= zero(T))==0, "α > 0")
+        @check_args(RationalQuadraticKernel, α, all(α .> zero(T)), "α > 0")
         @check_args(RationalQuadraticKernel, β, β > zero(T), "β > 0")
-
-        return new{T,A}(α, β)
+        if A <:Real
+            new{T,A}(α,β,SquaredEuclidean())
+        else
+            new{T,A}(α,β,WeightedSqEuclidean(α))
+        end
     end
 end
 function RationalQuadraticKernel(
@@ -49,6 +52,10 @@ function RationalQuadraticKernel(
         β::T₂=T₁(1)
     ) where {T₁<:Real, T₂<:Real}
     RationalQuadraticKernel{promote_float(T₁, T₂)}(α, β)
+end
+
+@inline function kappa(κ::RationalQuadraticKernel{T,<:Real}, d²::T) where {T}
+    return (one(T) + κ.α*d²)^(-κ.β)
 end
 
 @inline function kappa(κ::RationalQuadraticKernel{T}, d²::T) where {T}
@@ -96,6 +103,7 @@ struct GammaRationalQuadraticKernel{T<:Real,A} <: AbstractRationalQuadraticKerne
     α::A
     β::T
     γ::T
+    metric::Metric
     function GammaRationalQuadraticKernel{T}(
             α::A=T(1),
             β::Real=T(1),
@@ -104,7 +112,11 @@ struct GammaRationalQuadraticKernel{T<:Real,A} <: AbstractRationalQuadraticKerne
         @check_args(GammaRationalQuadraticKernel, α, all(α .> zero(T)), "∀ α > 0")
         @check_args(GammaRationalQuadraticKernel, β, β > zero(T), "β > 0")
         @check_args(GammaRationalQuadraticKernel, γ, one(T) >= γ > zero(T), "γ ∈ (0,1]")
-        return new{T,typeof(α)}(α.^(-γ), β, γ)
+        if A <:Real
+            new{T,A}(α,β,γ,SquaredEuclidean())
+        else
+            new{T,A}(α,β,γ,WeightedSqEuclidean(α.^(-γ)))
+        end
     end
 end
 function GammaRationalQuadraticKernel(
@@ -115,13 +127,18 @@ function GammaRationalQuadraticKernel(
     GammaRationalQuadraticKernel{promote_float(T₁,T₂,T₃)}(α, β, γ)
 end
 
+@inline function kappa(κ::GammaRationalQuadraticKernel{T,<:Real}, d²::T) where {T}
+    return (one(T) + κ.α*(d²^κ.γ))^(-κ.β)
+end
+
 @inline function kappa(κ::GammaRationalQuadraticKernel{T}, d²::T) where {T}
     return (one(T) + (d²^κ.γ))^(-κ.β)
 end
+
 
 function convert(
         ::Type{K},
         κ::GammaRationalQuadraticKernel
     ) where {K>:GammaRationalQuadraticKernel{T,A} where A} where T
-    return GammaRationalQuadraticKernel{T}(T.(κ.α.^κ.γ), T(κ.β), T(κ.γ))
+    return GammaRationalQuadraticKernel{T}(T.(κ.α), T(κ.β), T(κ.γ))
 end
