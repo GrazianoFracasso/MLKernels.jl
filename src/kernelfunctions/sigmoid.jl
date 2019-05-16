@@ -22,16 +22,22 @@ SigmoidKernel{Float64}(0.5,0.5)
 struct SigmoidKernel{T<:Real,A} <: Kernel{T}
     α::A
     c::T
-    function SigmoidKernel{T}(a::Union{Real,AbstractVector{<:Real}}=T(1), c::Real=T(1)) where {T<:Real}
-        @check_args(SigmoidKernel, a, count(a .<=  zero(T))==0, "a > 0")
+    metric::PreMetric
+    function SigmoidKernel{T}(a::A=T(1), c::Real=T(1)) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
+        @check_args(SigmoidKernel, a, all(a .>  zero(T)), "a > 0")
         @check_args(SigmoidKernel, c, c >= zero(T), "c ≧ 0")
-        return new{T,typeof(a)}(a, c)
+        if A <: Real
+            new{T,A}(a,c,ScalarProduct())
+        else
+            new{T,A}(a,c,WeightedScalarProduct(a))
+        end
     end
 end
 SigmoidKernel(a::Union{T₁,AbstractVector{T₁}}=1.0, c::T₂=T₁(1)) where {T₁<:Real,T₂<:Real} = SigmoidKernel{promote_float(T₁,T₂)}(a,c)
 
 # @inline basefunction(::SigmoidKernel) = ScalarProduct()
 
+@inline kappa(κ::SigmoidKernel{T,<:Real}, xᵀy::T) where {T} = tanh(κ.α*xᵀy + κ.c)
 @inline kappa(κ::SigmoidKernel{T}, xᵀy::T) where {T} = tanh(xᵀy + κ.c)
 
 function convert(::Type{K}, κ::SigmoidKernel) where {K>:SigmoidKernel{T,A} where A} where T

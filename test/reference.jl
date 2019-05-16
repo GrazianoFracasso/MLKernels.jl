@@ -1,9 +1,9 @@
 # Base Function Test
 
-struct Euclidean <: Metric end
+# struct Euclidean <: Metric end
 
-MLK.base_aggregate(::Euclidean, s::T, scale::T, x::T, y::T) where {T} = s + scale*(x-y)^2
-MLK.base_return(::Euclidean, s::T) where {T} = sqrt(s)
+# MLK.base_aggregate(::Euclidean, s::T, scale::T, x::T, y::T) where {T} = s + scale*(x-y)^2
+# MLK.base_return(::Euclidean, s::T) where {T} = sqrt(s)
 
 
 # Base Function References

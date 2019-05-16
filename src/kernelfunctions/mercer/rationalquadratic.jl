@@ -103,7 +103,7 @@ struct GammaRationalQuadraticKernel{T<:Real,A} <: AbstractRationalQuadraticKerne
     α::A
     β::T
     γ::T
-    metric::Metric
+    metric::SemiMetric
     function GammaRationalQuadraticKernel{T}(
             α::A=T(1),
             β::Real=T(1),

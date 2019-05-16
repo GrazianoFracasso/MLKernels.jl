@@ -23,7 +23,7 @@ ExponentiatedKernel{Float32}(2.0)
 """
 struct ExponentiatedKernel{T<:Real,A} <: MercerKernel{T}
     α::A
-    metric::Metric
+    metric::PreMetric
     function ExponentiatedKernel{T}(α::A=T(1.0)) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
         @check_args(ExponentiatedKernel, α, count(α .<= zero(T))==0, "α > 0")
         if A <: Real

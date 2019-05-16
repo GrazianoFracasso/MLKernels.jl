@@ -24,11 +24,10 @@ LogKernel{Float64}(0.5,0.5)
 struct LogKernel{T<:Real,A} <: NegativeDefiniteKernel{T}
     α::A
     γ::T
-    metric::Metric
+    metric::SemiMetric
     function LogKernel{T}(α::A=T(1), γ::Real=T(1)) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
         @check_args(LogKernel, α, all(α .> zero(T)), "α > 0")
         @check_args(LogKernel, γ, one(T) >= γ > zero(T), "γ ∈ (0,1]")
-        o
         if A <: Real
             new{T,A}(α,γ,SqEuclidean())
         else

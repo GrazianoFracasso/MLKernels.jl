@@ -49,3 +49,5 @@ for k in kernels
         SUITE["ard"][string(k)]["K(A,B)",key] = @benchmarkable  kernelmatrix($val,$(kernel[key]),$A,$B)
     end
 end
+
+# run(SUITE,verbose=true)

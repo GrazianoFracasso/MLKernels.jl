@@ -20,7 +20,7 @@ PowerKernel{Float32}(0.5)
 struct PowerKernel{T<:Real,A} <: NegativeDefiniteKernel{T}
     γ::T
     α::A
-    metric::Metric
+    metric::SemiMetric
     function PowerKernel{T}(γ::Real=T(1)) where {T<:Real}
         @check_args(PowerKernel, γ, one(T) >= γ > zero(T), "γ ∈ (0,1]")
         new{T,T}(γ,one(T),SqEuclidean())

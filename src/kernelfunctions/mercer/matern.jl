@@ -20,7 +20,7 @@ MaternKernel{Float64}(2.0,2.0)
 struct MaternKernel{T<:Real,A} <: MercerKernel{T}
     ν::T
     ρ::A
-    metric::SemiMetric
+    metric::Metric
     function MaternKernel{T}(ν::Real=T(1), ρ::A=T(1)) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
         @check_args(MaternKernel, ν, ν > zero(T), "ν > 0")
         @check_args(MaternKernel, ρ, count(ρ .<= zero(T)) == 0, "ρ > 0")

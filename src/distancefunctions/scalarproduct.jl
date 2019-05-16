@@ -1,13 +1,13 @@
-struct ScalarProduct <: Distances.Metric end
+struct ScalarProduct <: Distances.PreMetric end
 
-struct WeightedScalarProduct{W <: AbstractArray{<:Real}} <: Distances.Metric
+struct WeightedScalarProduct{W <: AbstractArray{<:Real}} <: Distances.PreMetric
     weights::W
 end
 
 function Distances.evaluate(dist::ScalarProduct,a::AbstractArray,b::AbstractArray)
-    dot(a,b)
+    LinearAlgebra.dot(a,b)
 end
 
 function Distances.evaluate(dist::WeightedScalarProduct,a::AbstractArray,b::AbstractArray)
-    dot(dist.w.*a,b)
+    LinearAlgebra.dot(dist.weights.*a,b)
 end

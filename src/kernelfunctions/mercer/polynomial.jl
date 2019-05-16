@@ -24,7 +24,7 @@ struct PolynomialKernel{T<:Real,A} <: MercerKernel{T}
     α::A
     c::T
     d::T
-    metric::Metric
+    metric::PreMetric
     function PolynomialKernel{T}(
             a::A=T(1),
             c::Real=T(1),
@@ -52,7 +52,7 @@ end
 
 # @inline basefunction(::PolynomialKernel) = ScalarProduct()
 
-@inline kappa(κ::PolynomialKernel{T,<:Real}, xᵀy::T) where {T} = (κ.a*xᵀy + κ.c)^(κ.d)
+@inline kappa(κ::PolynomialKernel{T,<:Real}, xᵀy::T) where {T} = (κ.α*xᵀy + κ.c)^(κ.d)
 @inline kappa(κ::PolynomialKernel{T}, xᵀy::T) where {T} = (xᵀy + κ.c)^(κ.d)
 
 function convert(::Type{K}, κ::PolynomialKernel) where {K>:PolynomialKernel{T,A} where A} where T

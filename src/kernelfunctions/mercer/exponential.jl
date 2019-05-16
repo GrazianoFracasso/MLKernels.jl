@@ -30,7 +30,7 @@ ExponentialKernel{Float32}(2.0)
 """
 struct ExponentialKernel{T<:Real,A} <: AbstractExponentialKernel{T}
     α::A
-    metric::SemiMetric
+    metric::Metric
     function ExponentialKernel{T}(α::A=T(1)) where {T<:Real,A<:Union{Real,AbstractVector{<:Real}}}
         @check_args(ExponentialKernel, α, count(α .<= zero(T)) == 0, "α > 0")
         if A <:Real
@@ -43,8 +43,8 @@ end
 
 ExponentialKernel(α::Union{T,AbstractVector{T}}=1.0) where {T<:Real} = ExponentialKernel{promote_float(T)}(α)
 
-@inline kappa(κ::ExponentialKernel{T,<:Real}, d²::T) where {T} = exp(-κ.α*d)
-@inline kappa(κ::ExponentialKernel{T}, d²::T) where {T} = exp(-d)
+@inline kappa(κ::ExponentialKernel{T,<:Real}, d::T) where {T} = exp(-κ.α*d)
+@inline kappa(κ::ExponentialKernel{T}, d::T) where {T} = exp(-d)
 
 function Base.convert(::Type{K}, κ::ExponentialKernel) where {K>:ExponentialKernel{T,A} where A} where T
     return ExponentialKernel{T}(T.(κ.α))

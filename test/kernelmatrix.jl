@@ -1,3 +1,8 @@
+using Test
+using MLKernels
+const MLK = MLKernels
+include("reference.jl")
+
 n = 30
 m = 20
 p = 5
