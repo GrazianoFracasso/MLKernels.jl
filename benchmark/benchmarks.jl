@@ -29,5 +29,23 @@ for k in kernels
 end
 
 input_params = Dict(
-    "ExponentialKernel" => Dict("Cols"=>ones(Dim1),"Rows"=>ones(Dim2)),
-)
+    "ExponentialKernel" => Dict("Cols"=>[ones(dim1)],"Rows"=>[ones(dim2)]),
+    "SquaredExponentialKernel" => Dict("Cols"=>[ones(dim1)],"Rows"=>[ones(dim2)]),
+    "GammaExponentialKernel" => Dict("Cols"=>[ones(dim1)],"Rows"=>[ones(dim2)]),
+    "RationalQuadraticKernel" => Dict("Cols"=>[ones(dim1)],"Rows"=>[ones(dim2)]),
+    "GammaRationalQuadraticKernel" => Dict("Cols"=>[ones(dim1)],"Rows"=>[ones(dim2)]),
+    "ExponentiatedKernel" => Dict("Cols"=>[ones(dim1)],"Rows"=>[ones(dim2)]),
+    "MaternKernel" => Dict("Cols"=>([1.0,ones(dim1)]),"Rows"=>([1.0,ones(dim2)])),
+    "PolynomialKernel" => Dict("Cols"=>[ones(dim1)],"Rows"=>[ones(dim2)]),
+    "PowerKernel" => Dict("Cols"=>[one(Float64)], "Rows"=>[one(Float64)]),
+    "LogKernel" => Dict("Cols"=>[ones(dim1)],"Rows"=>[ones(dim2)]),
+    "SigmoidKernel" => Dict("Cols"=>[ones(dim1)],"Rows"=>[ones(dim2)]))
+
+for k in kernels
+    global kernel = Dict("Rows"=>k(input_params[string(k)]["Rows"]...),"Cols"=>k(input_params[string(k)]["Cols"]...))
+    SUITE["ard"][string(k)]["init"] = @benchmarkable $(k)($(input_params[string(k)]["Rows"])...)
+    for (key,val) in obsdim
+        SUITE["ard"][string(k)]["K(A)",key] = @benchmarkable  kernelmatrix($val,$(kernel[key]),$A)
+        SUITE["ard"][string(k)]["K(A,B)",key] = @benchmarkable  kernelmatrix($val,$(kernel[key]),$A,$B)
+    end
+end

@@ -1,6 +1,6 @@
 struct ScalarProduct <: Distances.Metric end
 
-struct WeightedScalarProduct{W <: AbtractArray{<:Real}} <: Distances.Metric
+struct WeightedScalarProduct{W <: AbstractArray{<:Real}} <: Distances.Metric
     weights::W
 end
 

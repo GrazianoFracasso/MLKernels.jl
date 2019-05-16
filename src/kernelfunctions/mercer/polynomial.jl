@@ -44,7 +44,7 @@ end
 
 function PolynomialKernel(
         a::Union{T₁,AbstractVector{T₁}}=1.0,
-        c::T₂=T₁(1),
+        c::T₂=one(T₁),
         d::T₃=convert(promote_float(T₁,T₂), 3)
     ) where {T₁<:Real,T₂<:Real,T₃<:Real}
     return PolynomialKernel{promote_float(T₁,T₂,T₃)}(a, c, d)
@@ -52,8 +52,8 @@ end
 
 @inline basefunction(::PolynomialKernel) = ScalarProduct()
 
-@inline function kappa(κ::PolynomialKernel{T,<:Real}, xᵀy::T) where {T} = (κ.a*xᵀy + κ.c)^(κ.d)
-@inline function kappa(κ::PolynomialKernel{T}, xᵀy::T) where {T} = (xᵀy + κ.c)^(κ.d)
+@inline kappa(κ::PolynomialKernel{T,<:Real}, xᵀy::T) where {T} = (κ.a*xᵀy + κ.c)^(κ.d)
+@inline kappa(κ::PolynomialKernel{T}, xᵀy::T) where {T} = (xᵀy + κ.c)^(κ.d)
 
 function convert(::Type{K}, κ::PolynomialKernel) where {K>:PolynomialKernel{T,A} where A} where T
     return PolynomialKernel{T}(T.(κ.α), T(κ.c), T(κ.d))

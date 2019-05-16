@@ -27,7 +27,7 @@ struct ExponentiatedKernel{T<:Real,A} <: MercerKernel{T}
     function ExponentiatedKernel{T}(α::A=T(1.0)) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
         @check_args(ExponentiatedKernel, α, count(α .<= zero(T))==0, "α > 0")
         if A <: Real
-            return new{T,A}(α,ScalarProduct)
+            return new{T,A}(α,ScalarProduct())
         else
             return new{T,A}(α,WeightedScalarProduct(α))
         end

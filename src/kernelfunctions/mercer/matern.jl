@@ -21,7 +21,7 @@ struct MaternKernel{T<:Real,A} <: MercerKernel{T}
     ν::T
     ρ::A
     metric::SemiMetric
-    function MaternKernel{T}(ν::Real=T(1), ρ::=T(1)) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
+    function MaternKernel{T}(ν::Real=T(1), ρ::A=T(1)) where {A<:Union{Real,AbstractVector{<:Real}},T<:Real}
         @check_args(MaternKernel, ν, ν > zero(T), "ν > 0")
         @check_args(MaternKernel, ρ, count(ρ .<= zero(T)) == 0, "ρ > 0")
         if A <: Real
@@ -32,7 +32,7 @@ struct MaternKernel{T<:Real,A} <: MercerKernel{T}
     end
 end
 
-MaternKernel(ν::Union{T₁,AbstractVector{T₁}}=1.0, ρ::T₂=T₁(1)) where {T₁<:Real,T₂<:Real} = MaternKernel{promote_float(T₁,T₂)}(ν,ρ)
+MaternKernel(ν::T₁=1.0, ρ::Union{T₂,AbstractVector{T₂}}=one(T₁)) where {T₁<:Real,T₂<:Real} = MaternKernel{promote_float(T₁,T₂)}(ν,ρ)
 
 @inline function kappa(κ::MaternKernel{T,<:Real}, d::T) where {T}
     d = d < eps(T) ? eps(T) : d  # If d is zero, besselk will return NaN
